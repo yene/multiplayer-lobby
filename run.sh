@@ -1,0 +1,1 @@
+go build && ./multiplayer-lobby
