@@ -1,11 +1,22 @@
 <template>
   <div id="app">
-    <div v-if="joinedLobby !== null">
+    <div v-if="joinedLobby !== null && joinedLobby.InProgress">
+      <h1>You are <span :style="'color: ' + colors[playerID]">Player {{playerID}}</span> in game {{joinedLobby.LobbyID}} </h1>
+      <p>Category: {{gameData.category}}</p>
+      <p>
+        <span v-if="gameData.fake === playerID">You are the Fake</span>
+        <span v-else>Word: {{gameData.word}}</span>
+      </p>
+      <button v-on:click="exitLobby">Exit Lobby</button>
+      <button v-if="playerID === 1" v-on:click="updateLobbyData">New Word</button>
+    </div>
+    <div v-else-if="joinedLobby !== null">
       <h1>You are in game {{joinedLobby.LobbyID}} </h1>
       <ul>
-        <li :style="'color: ' + colors[player]" v-for="(player, i) in joinedLobby.Players" :key="i">Player {{colors[player]}} </li>
+        <li :style="'color: ' + colors[player]" v-for="(player, i) in joinedLobby.Players" :key="i">Player {{player}} is {{colors[player]}} <span v-if="player === playerID" style="color: black">← This is you</span></li>
       </ul>
-      <button v-on:click="createLobby">Create Lobby</button>
+      <button v-on:click="exitLobby">Exit Lobby</button>
+      <button v-if="playerID === 1" v-on:click="startGame">Start</button>
     </div>
     <div v-else>
       <h1>Games in progress</h1>
@@ -27,13 +38,23 @@ export default {
   },
   data() {
     return {
-      colors: ['black', 'darkred', 'red', 'orange', 'yellow', 'green', 'darkgreen', 'blue', 'darkblue', 'brown'],
+      colors: ['', 'black', 'darkred', 'red', 'orange', 'yellow', 'green', 'darkgreen', 'blue', 'darkblue', 'brown'],
       lobbies: [],
       joinedLobby: null,
+      playerID: 0,
+      pollingLobby: null,
+      gameData: {category: '', word: '', fake: 0},
     }
   },
   mounted() {
     this.listLobbies();
+    var s = window.localStorage.getItem('save');
+    if (s !== null) {
+      var save = JSON.parse(s);
+      this.playerID = save.playerID;
+      this.getLobbyData(save.hashid);
+      this.startPollingLobby();
+    }
   },
   methods: {
     createLobby() {
@@ -51,12 +72,49 @@ export default {
         this.lobbies = l;
       });
     },
+    getLobbyData(hashid) {
+      axios.get('/lobby/' + hashid).then((response) => {
+        this.joinedLobby = response.data;
+        if (this.joinedLobby.Data !== '') {
+          this.gameData = JSON.parse(this.joinedLobby.Data);
+        }
+      });
+    },
     joinLobby(hashid) {
       axios.get('/join/' + hashid).then((response) => {
         this.joinedLobby = response.data;
-        var s = {playerid: this.joinedLobby.YourPlayerID, lobbyid: this.joinedLobby.LobbyID};
-        window.localStorage.setItem('gamestate', JSON.stringify(s));
+        this.playerID = this.joinedLobby.YourPlayerID;
+        var s = {playerID: this.joinedLobby.YourPlayerID, lobbyID: this.joinedLobby.LobbyID, hashid: this.joinedLobby.Hashid};
+        window.localStorage.setItem('save', JSON.stringify(s));
+        this.startPollingLobby();
       });
+    },
+    exitLobby() {
+      window.localStorage.removeItem('save');
+      location.reload();
+    },
+    startPollingLobby(hashid) {
+      this.pollingLobby = setInterval(() => {
+        this.getLobbyData(this.joinedLobby.Hashid);
+      }, 5000);
+    },
+    stopPollingLobby() {
+      clearInterval(this.pollingLobby);
+      this.pollingLobby = null;
+    },
+    startGame() {
+      this.updateLobbyData();
+    },
+    updateLobbyData() {
+      // get all things to play, filter out played, send data
+      axios.post('/update/' + this.joinedLobby.Hashid, {
+        category: 'Humans',
+        word: 'Bla',
+        fake: 2,
+      })
+      .then(function (response) {
+        console.log(response);
+      })
     }
   }
 }

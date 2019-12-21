@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -32,6 +33,7 @@ func main() {
 	router.GET("/lobbies", listLobbies)
 	router.GET("/lobby/:hashid", showLobby)
 	router.GET("/join/:hashid", joinLobby)
+	router.POST("/update/:hashid", updateLobby)
 	static := httprouter.New()
 	static.ServeFiles("/*filepath", http.Dir("frontend/dist"))
 	router.NotFound = static
@@ -99,10 +101,37 @@ func createLobby(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	defer g.Unlock()
 	newLobbyID := len(g.lobbies) + 1
 	e, _ := h.Encode([]int{newLobbyID})
-	newLobby := &Lobby{newLobbyID, e, time.Now(), []int{}}
+	newLobby := &Lobby{newLobbyID, e, false, time.Now(), []int{}, ""}
 	g.lobbies[e] = newLobby
 
 	js, err := json.Marshal(newLobby)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func updateLobby(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	g.Lock()
+	defer g.Unlock()
+	hashid := ps.ByName("hashid")
+	lobby, ok := g.lobbies[hashid]
+	if !ok {
+		http.Error(w, "Lobby not found", http.StatusNotFound)
+		return
+	}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid Body", http.StatusNotFound)
+		return
+	}
+
+	lobby.InProgress = true
+	lobby.Data = string(body)
+
+	js, err := json.Marshal(lobby)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

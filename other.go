@@ -22,8 +22,10 @@ type Games struct {
 type Lobby struct {
 	LobbyID      int
 	Hashid       string
+	InProgress   bool
 	CreationDate time.Time
 	Players      []int
+	Data         string
 }
 
 type JoinAnswer struct {
