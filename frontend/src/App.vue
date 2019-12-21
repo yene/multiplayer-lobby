@@ -2,10 +2,10 @@
   <div id="app">
     <div v-if="joinedLobby !== null && joinedLobby.InProgress">
       <h1>You are <span :style="'color: ' + colors[playerID]">Player {{playerID}}</span> in game {{joinedLobby.LobbyID}} </h1>
-      <p>Category: {{gameData.category}}</p>
+      <p>Kategory: {{gameData.category}}</p>
       <p>
-        <span v-if="gameData.fake === playerID">You are the Fake</span>
-        <span v-else>Word: {{gameData.word}}</span>
+        <span v-if="gameData.fake === playerID">Du bist der Fake</span>
+        <span v-else>Wort: {{gameData.name}}</span>
       </p>
       <button v-on:click="exitLobby">Exit Lobby</button>
       <button v-if="playerID === 1" v-on:click="updateLobbyData">New Word</button>
@@ -31,11 +31,10 @@
 <script>
 /* eslint-disable */
 import axios from 'axios';
+import {wordsEN} from './words-en.js';
 
 export default {
   name: 'app',
-  components: {
-  },
   data() {
     return {
       colors: ['', 'black', 'darkred', 'red', 'orange', 'yellow', 'green', 'darkgreen', 'blue', 'darkblue', 'brown'],
@@ -107,10 +106,13 @@ export default {
     },
     updateLobbyData() {
       // get all things to play, filter out played, send data
+      var pos = randomIntFromInterval(0, wordsEN.length-1);
+      var card = wordsEN[pos];
+
       axios.post('/update/' + this.joinedLobby.Hashid, {
-        category: 'Humans',
-        word: 'Bla',
-        fake: 2,
+        category: card.category,
+        name: card.name,
+        fake: randomIntFromInterval(1, this.joinedLobby.Players.length),
       })
       .then(function (response) {
         console.log(response);
@@ -118,6 +120,11 @@ export default {
     }
   }
 }
+
+function randomIntFromInterval(min, max) {
+	return Math.floor(Math.random()*(max-min+1)+min);
+}
+
 </script>
 
 <style>
@@ -128,5 +135,12 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 20px;
+}
+
+h1 {
+  font-size: 24px;
+}
+p {
+  font-size: 18px;
 }
 </style>
