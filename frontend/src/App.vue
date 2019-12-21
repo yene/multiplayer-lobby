@@ -37,7 +37,7 @@ export default {
   name: 'app',
   data() {
     return {
-      colors: ['', 'black', 'darkred', 'red', 'orange', 'yellow', 'green', 'darkgreen', 'blue', 'darkblue', 'brown'],
+      colors: ['', 'black', 'red', 'green', 'blue', 'orange', 'yellow', 'darkblue', 'brown', 'darkred', 'darkgreen'],
       lobbies: [],
       joinedLobby: null,
       playerID: 0,
@@ -89,8 +89,11 @@ export default {
       });
     },
     exitLobby() {
-      window.localStorage.removeItem('save');
-      location.reload();
+      var ok = confirm('Are you sure?');
+      if (ok) {
+        window.localStorage.removeItem('save');
+        location.reload();
+      }
     },
     startPollingLobby(hashid) {
       this.pollingLobby = setInterval(() => {
@@ -141,6 +144,12 @@ h1 {
   font-size: 24px;
 }
 p {
-  font-size: 18px;
+  font-size: 20px;
+}
+
+ul {
+  text-align: left;
+  width: 300px;
+  margin: auto auto 0 0;
 }
 </style>
