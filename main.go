@@ -24,7 +24,7 @@ func main() {
 	hd := hashids.NewData()
 	hd.Salt = "this is my salt"
 	hd.MinLength = 7
-	h = hashids.NewWithData(hd)
+	h, _ = hashids.NewWithData(hd)
 
 	g.lobbies = make(map[string]*Lobby)
 
