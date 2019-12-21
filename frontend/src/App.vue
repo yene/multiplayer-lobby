@@ -55,6 +55,9 @@ export default {
       this.startPollingLobby();
     }
   },
+  beforeDestroy() {
+    this.stopPollingLobby();
+  },
   methods: {
     createLobby() {
       axios.get('/create').then((response) => {
@@ -150,6 +153,7 @@ p {
 ul {
   text-align: left;
   width: 300px;
-  margin: auto auto 0 0;
+  margin: auto;
+  margin-bottom: 20px;
 }
 </style>
