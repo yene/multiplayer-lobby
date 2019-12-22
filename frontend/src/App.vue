@@ -2,10 +2,10 @@
   <div id="app">
     <div v-if="joinedLobby !== null && joinedLobby.InProgress">
       <h1>You are <span :style="'color: ' + colors[playerID]">Player {{playerID}}</span> in game {{joinedLobby.LobbyID}} </h1>
-      <p>Kategory: {{gameData.category}}</p>
+      <p>Category: {{gameData.category}}</p>
       <p>
-        <span v-if="gameData.fake === playerID">Du bist der Fake</span>
-        <span v-else>Wort: {{gameData.name}}</span>
+        <span v-if="gameData.fake === playerID">You are the Fake</span>
+        <span v-else>Word: {{gameData.name}}</span>
       </p>
       <button v-on:click="exitLobby">Exit Lobby</button>
       <button v-if="playerID === 1" v-on:click="updateLobbyData">New Word</button>
@@ -19,9 +19,9 @@
       <button v-if="playerID === 1" v-on:click="startGame">Start</button>
     </div>
     <div v-else>
-      <h1>Games in progress</h1>
+      <h1>Open Lobbies</h1>
       <ul>
-        <li v-for="(lobby, i) in lobbies" :key="i">Lobby number {{lobby.LobbyID}} <button v-on:click="joinLobby(lobby.Hashid)">Join</button></li>
+        <li v-for="(lobby, i) in openLobbie" :key="i">Lobby number {{lobby.LobbyID}} <button v-on:click="joinLobby(lobby.Hashid)">Join</button></li>
       </ul>
       <button v-on:click="createLobby">Create Lobby</button>
     </div>
@@ -57,6 +57,13 @@ export default {
   },
   beforeDestroy() {
     this.stopPollingLobby();
+  },
+  computed: {
+    openLobbie() {
+      return this.lobbies.filter((l) => {
+        return l.InProgress === false;
+      });
+    }
   },
   methods: {
     createLobby() {

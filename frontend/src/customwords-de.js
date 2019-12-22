@@ -19,7 +19,6 @@ export const namesDE = [
   {category: 'Tiere', name: 'Eisbär'},
   {category: 'Tiere', name: 'Biene'},
   {category: 'Tiere', name: 'Bieber'},
-  {category: 'Tiere', name: 'Bieber'},
   {category: 'Tiere', name: 'Giraffe'},
   {category: '', name: ''},
   {category: '', name: ''},
