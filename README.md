@@ -1,6 +1,8 @@
 # Multiplayer Lobby
 
 Backend for a lobby based web game. The Hashid can be used to find lobbies or as password into a lobby.
+It is just hacked together for christmas.
+It is on Heroku https://guarded-spire-94633.herokuapp.com
 
 ## Inspiration
 https://play-werewolf.herokuapp.com/sd96vd
